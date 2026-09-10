@@ -1,0 +1,173 @@
+#include "stm32f4xx_hal.h"
+#include "main.h"
+#include "string.h"
+#include "stdio.h"
+
+#define TRUE  1
+#define FALSE 0
+
+void SystemCLk_Config(uint8_t clk_freq);
+void Error_handler(void);
+void GPIO_Init(void);
+void timer6_init(void);
+
+TIM_HandleTypeDef htimer6 ;
+
+int main(void)
+{
+	HAL_Init();
+	SystemCLk_Config(SYS_CLOCK_FREQ_50_MHZ);
+	GPIO_Init();
+	timer6_init();
+
+	//start timer
+	HAL_TIM_Base_Start_IT(&htimer6);
+
+
+	return 0 ;
+}
+
+void SystemCLk_Config(uint8_t clk_freq)
+{
+	RCC_OscInitTypeDef osc_init;
+	RCC_ClkInitTypeDef clk_init;
+	uint32_t Flatency = 0 ;
+
+	osc_init.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+	osc_init.HSEState = RCC_HSE_BYPASS; //by default it is on
+	osc_init.PLL.PLLState = RCC_PLL_ON;
+	osc_init.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+
+
+	switch (clk_freq)
+	{
+		case SYS_CLOCK_FREQ_50_MHZ:
+		{
+			osc_init.PLL.PLLM = 8;
+			osc_init.PLL.PLLM = 100;
+			osc_init.PLL.PLLP = 2;
+			osc_init.PLL.PLLQ = 2;
+			osc_init.PLL.PLLR = 2;
+
+			clk_init.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+			clk_init.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+			clk_init.AHBCLKDivider = RCC_SYSCLK_DIV1;
+			clk_init.APB1CLKDivider = RCC_HCLK_DIV2;
+			clk_init.APB2CLKDivider = RCC_HCLK_DIV2;
+
+			Flatency = FLASH_ACR_LATENCY_1WS; //check reference manual
+			break;
+		}
+		case SYS_CLOCK_FREQ_84_MHZ:
+		{
+			osc_init.PLL.PLLM = 8;
+			osc_init.PLL.PLLM = 168;
+			osc_init.PLL.PLLP = 2;
+			osc_init.PLL.PLLQ = 2;
+			osc_init.PLL.PLLR = 2;
+
+			clk_init.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+			clk_init.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+			clk_init.AHBCLKDivider = RCC_SYSCLK_DIV1;
+			clk_init.APB1CLKDivider = RCC_HCLK_DIV2;
+			clk_init.APB2CLKDivider = RCC_HCLK_DIV2;
+
+			Flatency = FLASH_ACR_LATENCY_2WS;
+			break;
+		}
+		case SYS_CLOCK_FREQ_120_MHZ:
+		{
+
+			osc_init.PLL.PLLM = 8;
+			osc_init.PLL.PLLM = 240;
+			osc_init.PLL.PLLP = 2;
+			osc_init.PLL.PLLQ = 2;
+			osc_init.PLL.PLLR = 2;
+
+			clk_init.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+			clk_init.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+			clk_init.AHBCLKDivider = RCC_SYSCLK_DIV1;
+			clk_init.APB1CLKDivider = RCC_HCLK_DIV4;
+			clk_init.APB2CLKDivider = RCC_HCLK_DIV2;
+
+			Flatency = FLASH_ACR_LATENCY_3WS;
+			break;
+		}
+		case SYS_CLOCK_FREQ_180_MHZ:
+		{
+			// enable clk for power controller
+			__HAL_RCC_PWR_CLK_ENABLE();
+			//set regulator voltage scale as 1
+			__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+			//turn on over drive mode of the voltage regulator
+			__HAL_PWR_OVERDRIVE_ENABLE();
+
+			//refer the DATASHEET as mentioned there in general operating condition
+			// to run the CLK at 180MHz u need to do all these
+
+			osc_init.PLL.PLLM = 8;
+			osc_init.PLL.PLLM = 360;
+			osc_init.PLL.PLLP = 2;
+			osc_init.PLL.PLLQ = 2;
+			osc_init.PLL.PLLR = 2;
+
+			clk_init.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+			clk_init.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+			clk_init.AHBCLKDivider = RCC_SYSCLK_DIV1;
+			clk_init.APB1CLKDivider = RCC_HCLK_DIV4;
+			clk_init.APB2CLKDivider = RCC_HCLK_DIV2;
+
+			Flatency = FLASH_ACR_LATENCY_5WS;
+			break;
+		}
+		default:
+			return;
+	}
+
+	if(HAL_RCC_OscConfig(&osc_init) != HAL_OK)
+	{
+		Error_handler();
+	}
+
+	if(HAL_RCC_ClockConfig(&clk_init, Flatency) != HAL_OK)
+	{
+		Error_handler();
+	}
+
+	// SYSTICK configuration
+	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000); // to generate delay of 1ms
+	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+
+}
+void GPIO_Init(void)
+{
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	GPIO_InitTypeDef ledgpio;
+	ledgpio.Pin = GPIO_PIN_5;
+	ledgpio.Mode = GPIO_MODE_OUTPUT_PP;
+	ledgpio.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOA, &ledgpio);
+}
+void timer6_init(void)
+{
+	htimer6.Instance = TIM6;
+	htimer6.Init.Prescaler = 24;
+	htimer6.Init.Period = 64000 - 1;
+	if(HAL_TIM_Base_Init(&htimer6) != HAL_OK)
+	{
+		Error_handler();
+	}
+}
+
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+}
+
+void Error_handler(void)
+{
+	while(1);
+}
+
+
+
