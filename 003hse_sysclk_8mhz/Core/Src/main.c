@@ -18,11 +18,10 @@ int main(void)
 	char msg[100];
 
 	HAL_Init();
-	UART2_Init();
 
 	memset(&osc_init,0,sizeof(osc_init));
 	osc_init.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-	osc_init.HSIState = RCC_HSE_BYPASS;
+	osc_init.HSEState = RCC_HSE_BYPASS;
 	if(HAL_RCC_OscConfig(&osc_init) != HAL_OK )
 	{
 	Error_handler();
@@ -41,7 +40,7 @@ int main(void)
 
 	__HAL_RCC_HSI_DISABLE();
 
-	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/10000);
+	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
 	UART2_Init();
@@ -72,7 +71,7 @@ int main(void)
 void UART2_Init(void)
 {
 	huart2.Instance = USART2;
-	huart2.Init.BaudRate = 11520;
+	huart2.Init.BaudRate = 115200;
 	huart2.Init.WordLength = UART_WORDLENGTH_8B;
 	huart2.Init.StopBits = UART_STOPBITS_1;
 	huart2.Init.Parity = UART_PARITY_NONE;

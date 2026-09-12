@@ -1,9 +1,3 @@
-/*
- * msp.c
- *
- *  Created on: Sep 3, 2026
- *      Author: bhard
- */
 
 #include "stm32f4xx_hal.h"
 void HAL_MspInit(void)

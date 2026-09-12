@@ -59,7 +59,7 @@ void SystemCLk_Config_HSE(uint8_t clk_freq)
 		case SYS_CLOCK_FREQ_50_MHZ:
 		{
 			osc_init.PLL.PLLM = 8;
-			osc_init.PLL.PLLM = 100;
+			osc_init.PLL.PLLN = 100;
 			osc_init.PLL.PLLP = 2;
 			osc_init.PLL.PLLQ = 2;
 			osc_init.PLL.PLLR = 2;
@@ -76,7 +76,7 @@ void SystemCLk_Config_HSE(uint8_t clk_freq)
 		case SYS_CLOCK_FREQ_84_MHZ:
 		{
 			osc_init.PLL.PLLM = 8;
-			osc_init.PLL.PLLM = 168;
+			osc_init.PLL.PLLN = 168;
 			osc_init.PLL.PLLP = 2;
 			osc_init.PLL.PLLQ = 2;
 			osc_init.PLL.PLLR = 2;
@@ -94,7 +94,7 @@ void SystemCLk_Config_HSE(uint8_t clk_freq)
 		{
 
 			osc_init.PLL.PLLM = 8;
-			osc_init.PLL.PLLM = 240;
+			osc_init.PLL.PLLN = 240;
 			osc_init.PLL.PLLP = 2;
 			osc_init.PLL.PLLQ = 2;
 			osc_init.PLL.PLLR = 2;
@@ -121,7 +121,7 @@ void SystemCLk_Config_HSE(uint8_t clk_freq)
 			// to run the CLK at 180MHz u need to do all these
 
 			osc_init.PLL.PLLM = 8;
-			osc_init.PLL.PLLM = 360;
+			osc_init.PLL.PLLN = 360;
 			osc_init.PLL.PLLP = 2;
 			osc_init.PLL.PLLQ = 2;
 			osc_init.PLL.PLLR = 2;
@@ -157,7 +157,7 @@ void SystemCLk_Config_HSE(uint8_t clk_freq)
 void UART2_Init(void)
 {
 	huart2.Instance = USART2;
-	huart2.Init.BaudRate = 11520;
+	huart2.Init.BaudRate = 115200;
 	huart2.Init.WordLength = UART_WORDLENGTH_8B;
 	huart2.Init.StopBits = UART_STOPBITS_1;
 	huart2.Init.Parity = UART_PARITY_NONE;

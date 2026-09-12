@@ -1,11 +1,3 @@
-/*
- * main.c
- *
- *  Created on: Sep 3, 2026
- *      Author: bhard
- */
-
-
 #include "stm32f4xx_hal.h"
 #include "main.h"
 #include "string.h"
@@ -61,7 +53,7 @@ void SystemClockConfig(void)
 void UART2_Init(void)
 {
 	huart2.Instance = USART2;
-	huart2.Init.BaudRate = 11520;
+	huart2.Init.BaudRate = 115200;
 	huart2.Init.WordLength = UART_WORDLENGTH_8B;
 	huart2.Init.StopBits = UART_STOPBITS_1;
 	huart2.Init.Parity = UART_PARITY_NONE;
@@ -86,7 +78,7 @@ uint8_t convert_to_capital(uint8_t data)
 
 void Error_handler(void)
 {
-
+	while(1);
 }
 
 
